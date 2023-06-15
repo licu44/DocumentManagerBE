@@ -34,12 +34,12 @@ namespace DocumentManager.Controllers
         {
             if(user.Username != request.Username)
             {
-                return BadRequest("User not found!");
+                return BadRequest("Username or Password is incorrect.");
             }
 
             if(!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             {
-                return BadRequest("Bad password!");
+                return BadRequest("Username or Password is incorrect.");
             }
 
             string token = CreateToken(user);
