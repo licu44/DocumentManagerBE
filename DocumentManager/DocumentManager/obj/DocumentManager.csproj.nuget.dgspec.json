@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\dezvoltare personala\\LICENTA\\BE\\DocumentManager\\DocumentManager\\DocumentManager.csproj": {}
+    "E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\DocumentManager.csproj": {}
   },
   "projects": {
-    "E:\\dezvoltare personala\\LICENTA\\BE\\DocumentManager\\DocumentManager\\DocumentManager.csproj": {
+    "E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\DocumentManager.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\dezvoltare personala\\LICENTA\\BE\\DocumentManager\\DocumentManager\\DocumentManager.csproj",
+        "projectUniqueName": "E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\DocumentManager.csproj",
         "projectName": "DocumentManager",
-        "projectPath": "E:\\dezvoltare personala\\LICENTA\\BE\\DocumentManager\\DocumentManager\\DocumentManager.csproj",
+        "projectPath": "E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\DocumentManager.csproj",
         "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-        "outputPath": "E:\\dezvoltare personala\\LICENTA\\BE\\DocumentManager\\DocumentManager\\obj\\",
+        "outputPath": "E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -44,9 +44,17 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Microsoft.IdentityModel.Tokens": {
+              "target": "Package",
+              "version": "[6.31.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.2.3, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[6.31.0, )"
             }
           },
           "imports": [
