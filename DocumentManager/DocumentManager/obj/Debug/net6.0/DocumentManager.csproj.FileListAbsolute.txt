@@ -74,3 +74,7 @@ E:\dezvoltare personala\LICENTA\DocumentManagerBE\DocumentManager\DocumentManage
 E:\dezvoltare personala\LICENTA\DocumentManagerBE\DocumentManager\DocumentManager\bin\Debug\net6.0\Scrutor.dll
 E:\dezvoltare personala\LICENTA\DocumentManagerBE\DocumentManager\DocumentManager\bin\Debug\net6.0\Swashbuckle.AspNetCore.Filters.dll
 E:\dezvoltare personala\LICENTA\DocumentManagerBE\DocumentManager\DocumentManager\bin\Debug\net6.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
+E:\dezvoltare personala\LICENTA\DocumentManagerBE\DocumentManager\DocumentManager\bin\Debug\net6.0\Microsoft.Azure.CognitiveServices.Vision.ComputerVision.dll
+E:\dezvoltare personala\LICENTA\DocumentManagerBE\DocumentManager\DocumentManager\bin\Debug\net6.0\Microsoft.Rest.ClientRuntime.dll
+E:\dezvoltare personala\LICENTA\DocumentManagerBE\DocumentManager\DocumentManager\bin\Debug\net6.0\Microsoft.Rest.ClientRuntime.Azure.dll
+E:\dezvoltare personala\LICENTA\DocumentManagerBE\DocumentManager\DocumentManager\bin\Debug\net6.0\Newtonsoft.Json.dll
