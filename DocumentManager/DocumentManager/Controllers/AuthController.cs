@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using DocumentManager.Data;
+using DocumentManager.Handlers;
+using DocumentManager.Models;
+using DocumentManager.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,76 +15,22 @@ namespace DocumentManager.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public static User user = new User();
-        private readonly IConfiguration _configuration;
-
-        public AuthController(IConfiguration configuration)
+        private readonly UserHandler _userHandler;
+        public AuthController(UserHandler userHandler)
         {
-            _configuration = configuration;
+            _userHandler = userHandler;
         }
-        [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserDto request)
-        {
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            user.Username = request.Username;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
 
-            return Ok(user);
+        [HttpPost("register")]
+        public async Task<ActionResult<User>> Register(Account request)
+        {
+            return Ok(_userHandler.CreateUser(request));
         }
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDto request)
+        public async Task<ActionResult<string>> Login(Account request)
         {
-            if(user.Username != request.Username)
-            {
-                return BadRequest("Username or Password is incorrect.");
-            }
-
-            if(!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
-            {
-                return BadRequest("Username or Password is incorrect.");
-            }
-
-            string token = CreateToken(user);
-            return Ok(token);
-        }
-
-        private string CreateToken(User user)
-        {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, "Admin")
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
-
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: credentials
-                );
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwt;
-        }
-
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt) { 
-            using(var hmac = new HMACSHA512()) 
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            }
-        }
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512(passwordSalt))
-            {
-                var computeHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return computeHash.SequenceEqual(passwordHash);
-            }
+            var test = _userHandler.VerifyUser(request);
+            return Ok(test);
         }
     }
 }
