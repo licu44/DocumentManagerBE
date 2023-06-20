@@ -1,13 +1,7 @@
 ﻿using DocumentManager.Data;
 using DocumentManager.Handlers;
 using DocumentManager.Models;
-using DocumentManager.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace DocumentManager.Controllers
 {
@@ -24,13 +18,30 @@ namespace DocumentManager.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register(Account request)
         {
-            return Ok(_userHandler.CreateUser(request));
+            var result = _userHandler.CreateUser(request);
+
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest("Failed to register user");
+            }
         }
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(Account request)
+        public async Task<ActionResult<string>> Login(LoginRequest request)
         {
-            var test = _userHandler.VerifyUser(request);
-            return Ok(test);
+            string result = _userHandler.VerifyUser(request.Username, request.Password);
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return Unauthorized();
+            }
         }
     }
 }

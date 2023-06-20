@@ -27,16 +27,21 @@ namespace DocumentManager.Handlers
 
             return _userServices.InsertUser(user) > 0;
         }
-        public string VerifyUser(Account request)
+        public string VerifyUser(string username, string password)
         {
-           UserData userData = _userServices.SelectUser(request.Username);
-           if (userData == null) { return ""; }
-           if(VerifyPasswordHash(userData.User, request.Password))
+            UserData userData = _userServices.SelectUser(username);
+
+            if (userData == null)
+            {
+                return null;
+            }
+
+            if (VerifyPasswordHash(userData.User, password))
             {
                 return CreateToken(userData);
             }
 
-            return "";
+            return null;
         }
         private User UserMapper(Account account)
         {

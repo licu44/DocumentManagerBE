@@ -24,25 +24,19 @@ namespace DocumentManager.Controllers
                 return BadRequest("No file uploaded.");
             }
 
-            // Read the uploaded file content into a stream
             using (Stream stream = file.OpenReadStream())
             {
                 ComputerVisionClient client =
                   new ComputerVisionClient(new ApiKeyServiceClientCredentials(key))
                   { Endpoint = endpoint };
 
-                // Read text from the uploaded file stream
                 var textHeaders = await client.ReadInStreamAsync(stream);
-                // After the request, get the operation location (operation ID)
                 string operationLocation = textHeaders.OperationLocation;
                 await Task.Delay(2000);
 
-                // Retrieve the URI where the extracted text will be stored from the Operation-Location header.
-                // We only need the ID and not the full URL
                 const int numberOfCharsInOperationId = 36;
                 string operationId = operationLocation.Substring(operationLocation.Length - numberOfCharsInOperationId);
 
-                // Extract the text
                 ReadOperationResult results;
                 do
                 {
@@ -51,7 +45,6 @@ namespace DocumentManager.Controllers
                 while ((results.Status == OperationStatusCodes.Running ||
                     results.Status == OperationStatusCodes.NotStarted));
 
-                // Display the found text.
                 var textResults = results.AnalyzeResult.ReadResults;
                 foreach (ReadResult page in textResults)
                 {
