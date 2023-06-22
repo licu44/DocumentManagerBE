@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DataContext>();
 builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<UserHandler>();
+builder.Services.AddScoped<DocumentHandler>();
+builder.Services.AddScoped<DocumentServices>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

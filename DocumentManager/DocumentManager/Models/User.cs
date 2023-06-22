@@ -15,5 +15,10 @@ namespace DocumentManager.Models
         public byte[] PasswordHash { get; set;}
         public byte[] PasswordSalt { get; set; }
 
+        public virtual ICollection<UserDoc> UserDocs { get; set; }
+        public ICollection<IdCard> IdCards { get; set; }
+        public ICollection<UrbanCertificate> UrbanCertificates { get; set; }
+
+
     }
 }

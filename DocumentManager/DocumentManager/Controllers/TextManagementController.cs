@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DocumentManager.Data;
+using DocumentManager.Handlers;
+using DocumentManager.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.IO;
 using System.Threading.Tasks;
@@ -13,49 +17,86 @@ namespace DocumentManager.Controllers
     [ApiController]
     public class TextManagementController : ControllerBase
     {
-        static string key = "3a0aa1a9674344a6a697e5f3ad77b3e8";
-        static string endpoint = "https://documentmagement.cognitiveservices.azure.com/";
+        private readonly DocumentServices _documentServices;
+        private readonly DocumentHandler _documentHandler;
 
-        [HttpPost("register")]
-        public async Task<ActionResult> ReadFile(IFormFile file)
+        public TextManagementController(DocumentServices documentServices, DocumentHandler documentHandler)
+        {
+            _documentServices = documentServices;
+            _documentHandler = documentHandler;
+        }
+
+        [HttpPost("processFile")]
+        public async Task<IActionResult> ProcessFile(IFormFile file, int userId, string documentType)
         {
             if (file == null || file.Length == 0)
             {
                 return BadRequest("No file uploaded.");
             }
 
-            using (Stream stream = file.OpenReadStream())
+            if (userId==null)
             {
-                ComputerVisionClient client =
-                  new ComputerVisionClient(new ApiKeyServiceClientCredentials(key))
-                  { Endpoint = endpoint };
-
-                var textHeaders = await client.ReadInStreamAsync(stream);
-                string operationLocation = textHeaders.OperationLocation;
-                await Task.Delay(2000);
-
-                const int numberOfCharsInOperationId = 36;
-                string operationId = operationLocation.Substring(operationLocation.Length - numberOfCharsInOperationId);
-
-                ReadOperationResult results;
-                do
-                {
-                    results = await client.GetReadResultAsync(Guid.Parse(operationId));
-                }
-                while ((results.Status == OperationStatusCodes.Running ||
-                    results.Status == OperationStatusCodes.NotStarted));
-
-                var textResults = results.AnalyzeResult.ReadResults;
-                foreach (ReadResult page in textResults)
-                {
-                    foreach (Line line in page.Lines)
-                    {
-                        Console.WriteLine(line.Text);
-                    }
-                }
+                return BadRequest("No ID provided.");
             }
 
-            return Ok();
+            if (string.IsNullOrWhiteSpace(documentType))
+            {
+                return BadRequest("No key provided.");
+            }
+
+            // Redirect based on key
+            switch (documentType)
+            {
+                case "1":
+                    return await _documentHandler.IdCard(file, userId);
+                case "2":
+                    return await _documentHandler.UrbanCertificate(file, userId);
+                default:
+                    return BadRequest($"Invalid key: {documentType}");
+            }
         }
+        [HttpPut("{userId}/{documentType}")]
+        public async Task<IActionResult> UpdateIdCard(int userId, int documentType, [FromBody] object documentData)
+        {
+            try
+            {
+                await _documentHandler.UpdateDocument(userId, documentType, documentData);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, $"Internal server error: {e}");
+            }
+        }
+
+        [HttpGet("{userId}/documents")]
+        public async Task<ActionResult<IEnumerable<DocumentDto>>> GetUserDocuments(int userId)
+        {
+            //for table
+            var documentDtos = await _documentHandler.GetUserDocuments(userId);
+            return Ok(documentDtos);
+        }
+
+        [HttpGet("{userId}/documents/generated")]
+        public async Task<ActionResult<IEnumerable<DocumentDto>>> GetGeneratedUserDocuments(int userId)
+        {
+            //for table
+            var documentDtos = await _documentHandler.GetGeneratedUserDocuments(userId);
+            return Ok(documentDtos);
+        }
+        [HttpGet("{userId}/generate")]
+        public async Task<IActionResult> GetGenerateDocumentsTrigger(int userId)
+        {
+            var generationSuccess = await _documentHandler.GenerateDocuments(userId);
+
+            if (!generationSuccess)
+            {
+                return StatusCode(500, "Document generation failed.");
+            }
+
+            var documentDtos = await _documentHandler.GetGeneratedUserDocuments(userId);
+            return Ok(documentDtos);
+        }
+
     }
 }
