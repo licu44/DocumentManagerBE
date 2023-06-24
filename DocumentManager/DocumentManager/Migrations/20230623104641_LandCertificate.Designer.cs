@@ -4,6 +4,7 @@ using DocumentManager.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DocumentManager.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230623104641_LandCertificate")]
+    partial class LandCertificate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,28 +24,6 @@ namespace DocumentManager.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("DocumentManager.Models.CadastralPlan", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Surface")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CadastralPlans");
-                });
 
             modelBuilder.Entity("DocumentManager.Models.DocumentType", b =>
                 {
@@ -112,6 +93,10 @@ namespace DocumentManager.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CF")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Surface")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -258,17 +243,6 @@ namespace DocumentManager.Migrations
                     b.ToTable("UserRoles");
                 });
 
-            modelBuilder.Entity("DocumentManager.Models.CadastralPlan", b =>
-                {
-                    b.HasOne("DocumentManager.Models.User", "User")
-                        .WithMany("CadastralPlans")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DocumentManager.Models.IdCard", b =>
                 {
                     b.HasOne("DocumentManager.Models.User", "User")
@@ -347,8 +321,6 @@ namespace DocumentManager.Migrations
 
             modelBuilder.Entity("DocumentManager.Models.User", b =>
                 {
-                    b.Navigation("CadastralPlans");
-
                     b.Navigation("IdCards");
 
                     b.Navigation("LandCertificates");

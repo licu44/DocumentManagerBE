@@ -36,6 +36,14 @@ namespace DocumentManager.Models
                .HasMany(u => u.UrbanCertificates)
                .WithOne(i => i.User)
                .HasForeignKey(i => i.UserId);
+            modelBuilder.Entity<User>()
+               .HasMany(u => u.LandCertificates)
+               .WithOne(i => i.User)
+               .HasForeignKey(i => i.UserId);
+            modelBuilder.Entity<User>()
+               .HasMany(u => u.CadastralPlans)
+               .WithOne(i => i.User)
+               .HasForeignKey(i => i.UserId);
         }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
@@ -44,7 +52,7 @@ namespace DocumentManager.Models
         public DbSet<UserDoc> UserDocs { get; set; }
         public DbSet<IdCard> IdCards { get; set; }
         public DbSet<UrbanCertificate> UrbanCertificates { get; set;}
-
-
+        public DbSet<LandCertificate> LandCertificates { get; set; }
+        public DbSet<CadastralPlan> CadastralPlans { get; set;}
     }
 }

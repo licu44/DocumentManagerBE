@@ -51,12 +51,16 @@ namespace DocumentManager.Controllers
                     return await _documentHandler.IdCard(file, userId);
                 case "2":
                     return await _documentHandler.UrbanCertificate(file, userId);
+                case "3": 
+                    return await _documentHandler.LandCertificate(file, userId);
+                case "4":
+                    return await _documentHandler.CadastralPlan(file, userId);
                 default:
                     return BadRequest($"Invalid key: {documentType}");
             }
         }
-        [HttpPut("{userId}/{documentType}")]
-        public async Task<IActionResult> UpdateIdCard(int userId, int documentType, [FromBody] object documentData)
+        [HttpPut("update/{userId}/{documentType}")]
+        public async Task<IActionResult> UpdateDocument(int userId, int documentType, [FromBody] object documentData)
         {
             try
             {
@@ -97,6 +101,32 @@ namespace DocumentManager.Controllers
             var documentDtos = await _documentHandler.GetGeneratedUserDocuments(userId);
             return Ok(documentDtos);
         }
+        [HttpGet("{userId}/{documentName}/download")]
+        public async Task<IActionResult> DownloadDocument(int userId, string documentName)
+        {
+            // construct the file path
+            var path = $"E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\Files\\Generated\\{documentName}-{userId}.docx";
+
+            // check if file exists
+            if (!System.IO.File.Exists(path))
+            {
+                return NotFound();
+            }
+
+            // get file stream
+            var memory = new MemoryStream();
+            await using (var stream = new FileStream(path, FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+
+            memory.Position = 0;
+
+            // provide download
+            return File(memory, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", Path.GetFileName(path));
+        }
+
+
 
     }
 }

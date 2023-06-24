@@ -83,7 +83,7 @@ namespace DocumentManager.Services
 
             await _dbContext.SaveChangesAsync();
         }
-        public async Task InsertUrabCertificateData(UrbanCertificateDto certificateData, int userId)
+        public async Task InsertUranCertificateData(UrbanCertificateDto certificateData, int userId)
         {
             var newUrbanCertificate = new UrbanCertificate
             {
@@ -109,7 +109,50 @@ namespace DocumentManager.Services
 
             await _dbContext.SaveChangesAsync();
         }
-        
+        public async Task InsertLandCertificateData(LandCertificateDto certificateData, int userId)
+        {
+            var newLandCertificate = new LandCertificate
+            {
+                UserId = userId,
+                CF = certificateData.CF,
+            };
+
+            _dbContext.LandCertificates.Add(newLandCertificate);
+
+            var newUserDoc = new UserDoc
+            {
+                UserId = userId,
+                TypeId = 3,
+                CreationDate = DateTime.Now,
+                Status = "UPLOADED",
+            };
+
+            _dbContext.UserDocs.Add(newUserDoc);
+
+            await _dbContext.SaveChangesAsync();
+        }
+        public async Task InsertCadastralPlanData(CadastralPlanDto certificateData, int userId)
+        {
+            var newCadastralPlan = new CadastralPlan
+            {
+                UserId = userId,
+                Surface = certificateData.Surface,
+            };
+
+            _dbContext.CadastralPlans.Add(newCadastralPlan);
+
+            var newUserDoc = new UserDoc
+            {
+                UserId = userId,
+                TypeId = 4,
+                CreationDate = DateTime.Now,
+                Status = "UPLOADED",
+            };
+
+            _dbContext.UserDocs.Add(newUserDoc);
+
+            await _dbContext.SaveChangesAsync();
+        }
         public async Task UpdateIdCardData(IdCardDto idData, int userId)
         {
             var idCard = await _dbContext.IdCards.FirstOrDefaultAsync(i => i.UserId == userId);
@@ -140,6 +183,89 @@ namespace DocumentManager.Services
                 throw new Exception($"No IdCard found for user with ID {userId}");
             }
         }
+        public async Task UpdateUrbanCertificateData(UrbanCertificateDto urbanCertificateData, int userId)
+        {
+            var urbanCertificate = await _dbContext.UrbanCertificates.FirstOrDefaultAsync(i => i.UserId == userId);
+
+            if (urbanCertificate != null)
+            {
+                urbanCertificate.UserId = userId;
+                urbanCertificate.ProjectAdress = urbanCertificateData.ProjectAdress;
+                urbanCertificate.UserAdress = urbanCertificateData.UserAdress;
+                urbanCertificate.Number = urbanCertificateData.Number;
+                urbanCertificate.Date = urbanCertificateData.Date;
+                urbanCertificate.ProjectType = urbanCertificateData.ProjectType;
+
+                _dbContext.UrbanCertificates.Update(urbanCertificate);
+
+                var userDoc = await _dbContext.UserDocs
+                    .FirstOrDefaultAsync(ud => ud.UserId == userId && ud.TypeId == 2);
+
+                if (userDoc != null)
+                {
+                    userDoc.Status = "VERIFIED";
+                    _dbContext.UserDocs.Update(userDoc);
+                }
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new Exception($"No Document found for user with ID {userId}");
+            }
+        }
+        public async Task UpdateLandCertificateData(LandCertificateDto landCertificateData, int userId)
+        {
+            var landCertificate = await _dbContext.LandCertificates.FirstOrDefaultAsync(i => i.UserId == userId);
+
+            if (landCertificate != null)
+            {
+                landCertificate.UserId = userId;
+                landCertificate.CF = landCertificateData.CF;
+
+                _dbContext.LandCertificates.Update(landCertificate);
+
+                var userDoc = await _dbContext.UserDocs
+                    .FirstOrDefaultAsync(ud => ud.UserId == userId && ud.TypeId == 2);
+
+                if (userDoc != null)
+                {
+                    userDoc.Status = "VERIFIED";
+                    _dbContext.UserDocs.Update(userDoc);
+                }
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new Exception($"No Document found for user with ID {userId}");
+            }
+        }
+        public async Task UpdateCadastralPlanData(CadastralPlanDto cadastralPlanData, int userId)
+        {
+            var cadastralPlan = await _dbContext.CadastralPlans.FirstOrDefaultAsync(i => i.UserId == userId);
+
+            if (cadastralPlan != null)
+            {
+                cadastralPlan.UserId = userId;
+                cadastralPlan.Surface = cadastralPlanData.Surface;
+
+                _dbContext.CadastralPlans.Update(cadastralPlan);
+
+                var userDoc = await _dbContext.UserDocs
+                    .FirstOrDefaultAsync(ud => ud.UserId == userId && ud.TypeId == 2);
+
+                if (userDoc != null)
+                {
+                    userDoc.Status = "VERIFIED";
+                    _dbContext.UserDocs.Update(userDoc);
+                }
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                throw new Exception($"No Document found for user with ID {userId}");
+            }
+        }
+
         public async Task GenerateDocumentsForUser(int userId)
         {
             // Implement the logic to generate the documents here.
@@ -150,27 +276,44 @@ namespace DocumentManager.Services
             // Implement the logic to generate the documents here.
             // This is a placeholder for your actual implementation.
         }
-        public async Task<AllDocumentDetailsDto> GetAllDocumentDetails(int userId)
+        public async Task<Dictionary<string, string>> GetAllDocumentDetails(int userId)
         {
-            AllDocumentDetailsDto allDocumentDetails = new AllDocumentDetailsDto();
+            var docs = new Dictionary<string, string>();
 
             var idCard = await _dbContext.IdCards.FirstOrDefaultAsync(i => i.UserId == userId);
             if (idCard != null)
             {
-                allDocumentDetails.IdCardDetails = new IdCardDetailsDto
-                {
-                    LastName = idCard.LastName,
-                    FirstName = idCard.FirstName,
-                    CNP = idCard.CNP,
-                    Series = idCard.Series,
-                    Number = idCard.Number,
-                    Address = idCard.Address,
-                };
+                docs["IdCardLastName"] = idCard.LastName;
+                docs["IdCardFirstName"] = idCard.FirstName;
+                docs["IdCardCNP"] = idCard.CNP;
+                docs["IdCardSeries"] = idCard.Series;
+                docs["IdCardNumber"] = idCard.Number;
+                docs["IdCardAddress"] = idCard.Address;
             }
 
-            // ...
+            var urbanCertificate = await _dbContext.UrbanCertificates.FirstOrDefaultAsync(i => i.UserId == userId);
+            if (urbanCertificate != null)
+            {
+                docs["UrbanCertificateUserAddress"] = urbanCertificate.UserAdress;
+                docs["UrbanCertificateProjectAddress"] = urbanCertificate.ProjectAdress;
+                docs["UrbanCertificateNumber"] = urbanCertificate.Number.ToString();
+                docs["UrbanCertificateDate"] = urbanCertificate.Date;
+                docs["UrbanCertificateProjectType"] = urbanCertificate.ProjectType;
+            }
 
-            return allDocumentDetails;
+            var landCertificate = await _dbContext.LandCertificates.FirstOrDefaultAsync(i => i.UserId == userId);
+            if (landCertificate != null)
+            {
+                docs["LandCertificateCF"] = landCertificate.CF;
+            }
+
+            var cadastralPlan = await _dbContext.CadastralPlans.FirstOrDefaultAsync(i => i.UserId == userId);
+            if (cadastralPlan != null)
+            {
+                docs["CadastralPlanSurface"] = cadastralPlan.Surface;
+            }
+
+            return docs;
         }
 
 

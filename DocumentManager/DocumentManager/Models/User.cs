@@ -18,7 +18,8 @@ namespace DocumentManager.Models
         public virtual ICollection<UserDoc> UserDocs { get; set; }
         public ICollection<IdCard> IdCards { get; set; }
         public ICollection<UrbanCertificate> UrbanCertificates { get; set; }
-
+        public ICollection<LandCertificate> LandCertificates { get; set; }
+        public ICollection<CadastralPlan> CadastralPlans { get; set; }
 
     }
 }
