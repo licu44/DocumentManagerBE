@@ -34,28 +34,69 @@ namespace DocumentManager.Services
 
             return documentDtos;
         }
-        public async Task<IEnumerable<DocumentDto>> GetGeneratedUserDocumentsAsync(int userId)
+        public async Task<IdCard> GetdCardData(int userId)
         {
-            var documentTypes = await _dbContext.DocumentTypes
+            IdCard result = _dbContext.IdCards.FirstOrDefault(id => id.UserId == userId);
+            return result;
+        }
+        public async Task<UrbanCertificate> GetUrbanCertificateData(int userId)
+        {
+            var result = _dbContext.UrbanCertificates.FirstOrDefault(id => id.UserId == userId);
+            return result;
+        }
+        public async Task<LandCertificate> GetLandCertificateData(int userId)
+        {
+            var result = _dbContext.LandCertificates.FirstOrDefault(id => id.UserId == userId);
+            return result;
+        }
+        public async Task<CadastralPlan> GetCadastralPlanData(int userId)
+        {
+            var result = _dbContext.CadastralPlans.FirstOrDefault(id => id.UserId == userId);
+            return result;
+        }
+
+        public async Task<IEnumerable<GeneratedDocumentsDto>> GetGeneratedUserDocumentsAsync(int userId)
+        {
+            var documentTypes = await _dbContext.GenerateDocTypes
                  .ToListAsync();
 
-            var userDocs = await _dbContext.UserDocs
+            var userDocs = await _dbContext.UserGeneratedDocs
                  .Where(ud => ud.UserId == userId)
                  .ToListAsync();
 
             var documentDtos = documentTypes.Select(d => {
                 var userDoc = userDocs.FirstOrDefault(ud => ud.TypeId == d.Id);
-                return new DocumentDto
+                return new GeneratedDocumentsDto
                 {
                     DocId = d.Id,
-                    DocName = d.DocName,
+                    DocName = d.Type,
                     CreationDate = userDoc?.CreationDate,
-                    Status = userDoc?.Status,
                 };
             }).ToList();
 
             return documentDtos;
         }
+        public async Task<object> GetGeneratedDocumentsAsync()
+        {
+            var documentTypes = await _dbContext.GenerateDocTypes
+                 .ToListAsync();
+
+            return documentTypes;
+        }
+        public async Task InsertGeneratedDocumentPath(int userId, int typeId, string filePath)
+        {
+            var userGeneratedDoc = new UserGeneratedDoc
+            {
+                UserId = userId,
+                TypeId = typeId,
+                CreationDate = DateTime.Now,
+                WordDocumentPath = filePath
+            };
+
+            _dbContext.UserGeneratedDocs.Add(userGeneratedDoc);
+            await _dbContext.SaveChangesAsync();
+        }
+
         public async Task InsertIdCardData(IdCardDto idData, int userId)
         {
             var newIdCard = new IdCard
@@ -66,7 +107,6 @@ namespace DocumentManager.Services
                 CNP = idData.CNP,
                 Series = idData.Series,
                 Number = idData.Number,
-                Address = idData.Address,
             };
 
             _dbContext.IdCards.Add(newIdCard);
@@ -164,7 +204,6 @@ namespace DocumentManager.Services
                 idCard.CNP = idData.CNP;
                 idCard.Series = idData.Series;
                 idCard.Number = idData.Number;
-                idCard.Address = idData.Address;
 
                 _dbContext.IdCards.Update(idCard);
 
@@ -225,7 +264,7 @@ namespace DocumentManager.Services
                 _dbContext.LandCertificates.Update(landCertificate);
 
                 var userDoc = await _dbContext.UserDocs
-                    .FirstOrDefaultAsync(ud => ud.UserId == userId && ud.TypeId == 2);
+                    .FirstOrDefaultAsync(ud => ud.UserId == userId && ud.TypeId == 3);
 
                 if (userDoc != null)
                 {
@@ -251,7 +290,7 @@ namespace DocumentManager.Services
                 _dbContext.CadastralPlans.Update(cadastralPlan);
 
                 var userDoc = await _dbContext.UserDocs
-                    .FirstOrDefaultAsync(ud => ud.UserId == userId && ud.TypeId == 2);
+                    .FirstOrDefaultAsync(ud => ud.UserId == userId && ud.TypeId == 4);
 
                 if (userDoc != null)
                 {
@@ -268,13 +307,7 @@ namespace DocumentManager.Services
 
         public async Task GenerateDocumentsForUser(int userId)
         {
-            // Implement the logic to generate the documents here.
-            // This is a placeholder for your actual implementation.
-        }
-        public async Task GetDocumentDetails(int userId)
-        {
-            // Implement the logic to generate the documents here.
-            // This is a placeholder for your actual implementation.
+            
         }
         public async Task<Dictionary<string, string>> GetAllDocumentDetails(int userId)
         {
@@ -288,7 +321,6 @@ namespace DocumentManager.Services
                 docs["IdCardCNP"] = idCard.CNP;
                 docs["IdCardSeries"] = idCard.Series;
                 docs["IdCardNumber"] = idCard.Number;
-                docs["IdCardAddress"] = idCard.Address;
             }
 
             var urbanCertificate = await _dbContext.UrbanCertificates.FirstOrDefaultAsync(i => i.UserId == userId);

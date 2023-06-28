@@ -2,6 +2,7 @@
 using DocumentManager.Handlers;
 using DocumentManager.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DocumentManager.Controllers
 {
@@ -32,9 +33,9 @@ namespace DocumentManager.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(LoginRequest request)
         {
-            string result = _userHandler.VerifyUser(request.Username, request.Password);
+            var result = _userHandler.VerifyUser(request.Username, request.Password);
 
-            if (!string.IsNullOrEmpty(result))
+            if (!string.IsNullOrEmpty(result.Token))
             {
                 return Ok(result);
             }
@@ -42,6 +43,7 @@ namespace DocumentManager.Controllers
             {
                 return Unauthorized();
             }
-        }
+        }        
+
     }
 }

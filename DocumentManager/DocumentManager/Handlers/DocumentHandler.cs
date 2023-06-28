@@ -17,6 +17,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.ComponentModel;
 using Newtonsoft.Json;
+using DocumentFormat.OpenXml.Drawing.Wordprocessing;
 
 namespace DocumentManager.Handlers
 {
@@ -36,7 +37,63 @@ namespace DocumentManager.Handlers
             var documentDtos = await _docServices.GetUserDocumentsAsync(userId);
             return documentDtos;
         }
-        public async Task<IEnumerable<DocumentDto>> GetGeneratedUserDocuments(int userId)
+
+        public async Task<object> GetDocumentFields(int userId, int documentType)
+        {
+            switch (documentType)
+            {
+                case 1:
+                    IdCard id = await _docServices.GetdCardData(userId);
+                    IdCardDto idData = new IdCardDto();
+                    if (id != null)
+                    {
+                        idData.LastName = id.LastName;
+                        idData.FirstName = id.FirstName;
+                        idData.Series = id.Series;
+                        idData.Number = id.Number;
+                        idData.CNP = id.CNP;
+                    }
+                    return idData;
+                case 2:
+                    UrbanCertificate urban = await _docServices.GetUrbanCertificateData(userId);
+                    UrbanCertificateDto urbanCertificateData = new UrbanCertificateDto();
+                    if(urban != null)
+                    {
+                        urbanCertificateData.Number = urban.Number;
+                        urbanCertificateData.ProjectAdress = urban.ProjectAdress;
+                        urbanCertificateData.UserAdress = urban.UserAdress;
+                        urbanCertificateData.Date = urban.Date;
+                        urbanCertificateData.ProjectType = urban.ProjectType;
+                    }
+
+                    return urbanCertificateData;
+
+                case 3:
+                    LandCertificate land = await _docServices.GetLandCertificateData(userId);
+                    LandCertificateDto landData = new LandCertificateDto();
+                    if(land != null)
+                    {
+                        landData.CF = land.CF;
+                    }
+                    return landData;
+
+                case 4:
+                    CadastralPlan cadastral = await _docServices.GetCadastralPlanData(userId);
+                    CadastralPlanDto cadastralPlanData = new CadastralPlanDto();
+
+                    if(cadastral != null)
+                    {
+                        cadastralPlanData.Surface = cadastral.Surface;
+                    }
+
+                    return cadastralPlanData;
+
+                default:
+                    throw new ArgumentException($"Unsupported document type: {documentType}");
+            }
+        }
+
+        public async Task<IEnumerable<GeneratedDocumentsDto>> GetGeneratedUserDocuments(int userId)
         {
             var documentDtos = await _docServices.GetGeneratedUserDocumentsAsync(userId);
             return documentDtos;
@@ -49,10 +106,7 @@ namespace DocumentManager.Handlers
             string seriaLine = linesList.FirstOrDefault(line => line.StartsWith("SERIA"));
             string cnpLine = linesList.FirstOrDefault(line => line.StartsWith("CNP"));
 
-            int addressLineIndex = linesList.FindIndex(line => line.StartsWith("Domiciliu")) + 1;
-            string addressLine = linesList[addressLineIndex];
-
-            if (string.IsNullOrEmpty(idLine) || string.IsNullOrEmpty(seriaLine) || string.IsNullOrEmpty(cnpLine) || string.IsNullOrEmpty(addressLine))
+            if (string.IsNullOrEmpty(idLine) || string.IsNullOrEmpty(seriaLine) || string.IsNullOrEmpty(cnpLine) )
             {
                 throw new Exception("Required line not found.");
             }
@@ -74,7 +128,6 @@ namespace DocumentManager.Handlers
             var cnpParts = cnpLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             idData.CNP = cnpParts[1];
 
-            idData.Address = addressLine.Trim();
 
             await _docServices.InsertIdCardData(idData, userId);
 
@@ -219,15 +272,27 @@ namespace DocumentManager.Handlers
                 var docs = await _docServices.GetAllDocumentDetails(userId);
                 await _docServices.GenerateDocumentsForUser(userId);
 
-                List<string> documentNames = new List<string> { "NotificareMediu", "CerereApaCanal", "CerereElectrica" };
+                var documentTypes = await _docServices.GetGeneratedDocumentsAsync() as List<GenerateDocType>;
 
-                foreach (var documentName in documentNames)
+                foreach (var documentType in documentTypes)
                 {
-                    string newFilePath = $"E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\Files\\Generated\\{documentName}-{userId}.docx";
-                    string sourceFilePath = $"E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\Files\\{documentName}.docx";
+                    string newFilePath = $"E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\Files\\Generated\\{documentType.Type}-{userId}.docx";
+                    string sourceFilePath = $"E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\Files\\{documentType.Type}.docx";
 
-                    ReplaceTextInDocumentAndSaveAs(docs, sourceFilePath, newFilePath);
+                    try
+                    {
+                        ReplaceTextInDocumentAndSaveAs(docs, sourceFilePath, newFilePath);
+
+                        // insert new file path into database
+                        await _docServices.InsertGeneratedDocumentPath(userId, documentType.Id, newFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error generating document: {ex.Message}");
+                    }
                 }
+
+
 
                 return true;
             }
@@ -239,10 +304,8 @@ namespace DocumentManager.Handlers
 
         public static void ReplaceTextInDocumentAndSaveAs(Dictionary<string, string> docs, string sourceFilePath, string newFilePath)
         {
-            // Make a copy of the document.
             System.IO.File.Copy(sourceFilePath, newFilePath, true);
 
-            // Open the copy and make changes.
             using (WordprocessingDocument newDoc = WordprocessingDocument.Open(newFilePath, true))
             {
                 var body = newDoc.MainDocumentPart.Document.Body;

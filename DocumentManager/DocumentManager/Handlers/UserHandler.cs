@@ -27,7 +27,7 @@ namespace DocumentManager.Handlers
 
             return _userServices.InsertUser(user) > 0;
         }
-        public string VerifyUser(string username, string password)
+        public LoginResult VerifyUser(string username, string password)
         {
             UserData userData = _userServices.SelectUser(username);
 
@@ -71,7 +71,7 @@ namespace DocumentManager.Handlers
                 return computeHash.SequenceEqual(user.PasswordHash);
             }
         }
-        private string CreateToken(UserData userData)
+        private LoginResult CreateToken(UserData userData)
         {
             List<Claim> claims = new List<Claim>
             {
@@ -90,7 +90,16 @@ namespace DocumentManager.Handlers
 
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return jwt;
+            LoginResult result = new LoginResult() 
+            { 
+                Token = jwt,
+                UserId = userData.User.Id,
+                Role = userData.Role,
+            };
+
+
+            return result;
         }
+
     }
 }

@@ -1,28 +1,19 @@
 ﻿using DocumentManager.Data;
 using DocumentManager.Handlers;
-using DocumentManager.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
-using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Data;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace DocumentManager.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,User")]
     public class TextManagementController : ControllerBase
     {
-        private readonly DocumentServices _documentServices;
         private readonly DocumentHandler _documentHandler;
 
-        public TextManagementController(DocumentServices documentServices, DocumentHandler documentHandler)
+        public TextManagementController(DocumentHandler documentHandler)
         {
-            _documentServices = documentServices;
             _documentHandler = documentHandler;
         }
 
@@ -80,6 +71,13 @@ namespace DocumentManager.Controllers
             var documentDtos = await _documentHandler.GetUserDocuments(userId);
             return Ok(documentDtos);
         }
+        [HttpGet("documentFields/{userId}/{documentType}")]
+        public async Task<object> GetDocumentFields(int userId, int documentType)
+        {
+            var result = await _documentHandler.GetDocumentFields(userId, documentType);
+            return result;
+        }
+
 
         [HttpGet("{userId}/documents/generated")]
         public async Task<ActionResult<IEnumerable<DocumentDto>>> GetGeneratedUserDocuments(int userId)

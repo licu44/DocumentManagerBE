@@ -20,6 +20,9 @@ namespace DocumentManager.Models
         public ICollection<UrbanCertificate> UrbanCertificates { get; set; }
         public ICollection<LandCertificate> LandCertificates { get; set; }
         public ICollection<CadastralPlan> CadastralPlans { get; set; }
+        public virtual ICollection<UserGeneratedDoc> UserGeneratedDocs { get; set; }
+        public virtual ICollection<UserStatus> UserStatuses { get; set; }
+
 
     }
 }

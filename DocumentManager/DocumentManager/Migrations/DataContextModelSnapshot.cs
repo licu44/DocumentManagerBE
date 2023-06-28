@@ -22,6 +22,23 @@ namespace DocumentManager.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("DocumentManager.Models.AuthorizationStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuthorizationStatuses");
+                });
+
             modelBuilder.Entity("DocumentManager.Models.CadastralPlan", b =>
                 {
                     b.Property<int>("Id")
@@ -61,7 +78,7 @@ namespace DocumentManager.Migrations
                     b.ToTable("DocumentTypes");
                 });
 
-            modelBuilder.Entity("DocumentManager.Models.IdCard", b =>
+            modelBuilder.Entity("DocumentManager.Models.EngineeringStatus", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -69,9 +86,56 @@ namespace DocumentManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Address")
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EngineeringStatuses");
+                });
+
+            modelBuilder.Entity("DocumentManager.Models.FeedbackStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FeedbackStatuses");
+                });
+
+            modelBuilder.Entity("DocumentManager.Models.GenerateDocType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GenerateDocTypes");
+                });
+
+            modelBuilder.Entity("DocumentManager.Models.IdCard", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CNP")
                         .IsRequired()
@@ -243,6 +307,29 @@ namespace DocumentManager.Migrations
                     b.ToTable("UserDocs");
                 });
 
+            modelBuilder.Entity("DocumentManager.Models.UserGeneratedDoc", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreationDate")
+                        .IsRequired()
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WordDocumentPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "TypeId");
+
+                    b.HasIndex("TypeId");
+
+                    b.ToTable("UserGeneratedDocs");
+                });
+
             modelBuilder.Entity("DocumentManager.Models.UserRole", b =>
                 {
                     b.Property<int>("UserId")
@@ -256,6 +343,39 @@ namespace DocumentManager.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("UserRoles");
+                });
+
+            modelBuilder.Entity("DocumentManager.Models.UserStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EngineeringId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FeddbackId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorizationId");
+
+                    b.HasIndex("EngineeringId");
+
+                    b.HasIndex("FeddbackId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserStatuses");
                 });
 
             modelBuilder.Entity("DocumentManager.Models.CadastralPlan", b =>
@@ -321,6 +441,25 @@ namespace DocumentManager.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DocumentManager.Models.UserGeneratedDoc", b =>
+                {
+                    b.HasOne("DocumentManager.Models.GenerateDocType", "Type")
+                        .WithMany("UserGeneratedDocs")
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DocumentManager.Models.User", "User")
+                        .WithMany("UserGeneratedDocs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Type");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DocumentManager.Models.UserRole", b =>
                 {
                     b.HasOne("DocumentManager.Models.Role", "Role")
@@ -340,9 +479,49 @@ namespace DocumentManager.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DocumentManager.Models.UserStatus", b =>
+                {
+                    b.HasOne("DocumentManager.Models.AuthorizationStatus", "AuthorizationStatus")
+                        .WithMany()
+                        .HasForeignKey("AuthorizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DocumentManager.Models.EngineeringStatus", "EngineeringStatus")
+                        .WithMany()
+                        .HasForeignKey("EngineeringId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DocumentManager.Models.FeedbackStatus", "FeedbackStatus")
+                        .WithMany()
+                        .HasForeignKey("FeddbackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DocumentManager.Models.User", "User")
+                        .WithMany("UserStatuses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthorizationStatus");
+
+                    b.Navigation("EngineeringStatus");
+
+                    b.Navigation("FeedbackStatus");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DocumentManager.Models.DocumentType", b =>
                 {
                     b.Navigation("UserDocs");
+                });
+
+            modelBuilder.Entity("DocumentManager.Models.GenerateDocType", b =>
+                {
+                    b.Navigation("UserGeneratedDocs");
                 });
 
             modelBuilder.Entity("DocumentManager.Models.User", b =>
@@ -356,6 +535,10 @@ namespace DocumentManager.Migrations
                     b.Navigation("UrbanCertificates");
 
                     b.Navigation("UserDocs");
+
+                    b.Navigation("UserGeneratedDocs");
+
+                    b.Navigation("UserStatuses");
                 });
 #pragma warning restore 612, 618
         }

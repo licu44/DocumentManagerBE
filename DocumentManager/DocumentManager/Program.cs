@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentManager.Handlers;
 using DocumentManager.Models;
 using DocumentManager.Services;
@@ -15,6 +16,10 @@ builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<UserHandler>();
 builder.Services.AddScoped<DocumentHandler>();
 builder.Services.AddScoped<DocumentServices>();
+builder.Services.AddScoped<StatusServices>();
+builder.Services.AddScoped<StatusHandler>();
+builder.Services.AddScoped<AdminHandler>();
+builder.Services.AddScoped<AdminServices>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

@@ -26,8 +26,6 @@ namespace DocumentManager.Models
         [Required]
         public string Number { get; set; }
 
-        [Required]
-        public string Address { get; set; }
 
         public virtual User User { get; set; }
     }
