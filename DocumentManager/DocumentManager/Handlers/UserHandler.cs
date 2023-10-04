@@ -1,8 +1,6 @@
-﻿using Azure.Core;
-using DocumentManager.Data;
+﻿using DocumentManager.Data;
 using DocumentManager.Models;
 using DocumentManager.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -78,7 +76,8 @@ namespace DocumentManager.Handlers
                 new Claim(ClaimTypes.Name, userData.User.Username),
                 new Claim(ClaimTypes.Role, userData.Role),
             };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
 
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 

@@ -58,7 +58,8 @@ namespace DocumentManager.Services
         public async Task<IEnumerable<GeneratedDocumentsDto>> GetGeneratedUserDocumentsAsync(int userId)
         {
             var documentTypes = await _dbContext.GenerateDocTypes
-                 .ToListAsync();
+                .Where(dt => !dt.Restricted)
+                .ToListAsync();
 
             var userDocs = await _dbContext.UserGeneratedDocs
                  .Where(ud => ud.UserId == userId)
@@ -83,19 +84,31 @@ namespace DocumentManager.Services
 
             return documentTypes;
         }
-        public async Task InsertGeneratedDocumentPath(int userId, int typeId, string filePath)
+        public async Task InsertOrUpdateGeneratedDocumentPath(int userId, int typeId, string filePath)
         {
-            var userGeneratedDoc = new UserGeneratedDoc
-            {
-                UserId = userId,
-                TypeId = typeId,
-                CreationDate = DateTime.Now,
-                WordDocumentPath = filePath
-            };
+            var existingUserGeneratedDoc = await _dbContext.UserGeneratedDocs.FirstOrDefaultAsync(doc => doc.UserId == userId && doc.TypeId == typeId);
 
-            _dbContext.UserGeneratedDocs.Add(userGeneratedDoc);
+            if (existingUserGeneratedDoc != null)
+            {
+                existingUserGeneratedDoc.WordDocumentPath = filePath;
+                existingUserGeneratedDoc.CreationDate = DateTime.Now;
+            }
+            else
+            {
+                var newUserGeneratedDoc = new UserGeneratedDoc
+                {
+                    UserId = userId,
+                    TypeId = typeId,
+                    CreationDate = DateTime.Now,
+                    WordDocumentPath = filePath
+                };
+
+                _dbContext.UserGeneratedDocs.Add(newUserGeneratedDoc);
+            }
+
             await _dbContext.SaveChangesAsync();
         }
+
 
         public async Task InsertIdCardData(IdCardDto idData, int userId)
         {
@@ -305,10 +318,7 @@ namespace DocumentManager.Services
             }
         }
 
-        public async Task GenerateDocumentsForUser(int userId)
-        {
-            
-        }
+
         public async Task<Dictionary<string, string>> GetAllDocumentDetails(int userId)
         {
             var docs = new Dictionary<string, string>();

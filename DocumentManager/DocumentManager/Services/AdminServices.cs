@@ -65,5 +65,53 @@ namespace DocumentManager.Services
             return await _dbContext.UserStatuses.FirstOrDefaultAsync(us => us.UserId == userId);
 
         }
+        public async Task<List<GenerateDocType>> GetGeneratedDocTypesAsync()
+        {
+            var documentTypes = await _dbContext.GenerateDocTypes.ToListAsync();
+            return documentTypes;
+        }
+        public async Task<bool> DeleteGeneratedDocTypeAsync(int id)
+        {
+            var docType = await _dbContext.GenerateDocTypes.FindAsync(id);
+
+            if (docType != null)
+            {
+                _dbContext.GenerateDocTypes.Remove(docType);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
+        }
+        public async Task SaveDocumentName(string documentName)
+        {
+            var newDocumentType = new GenerateDocType
+            {
+                Type = documentName
+            };
+
+            _dbContext.GenerateDocTypes.Add(newDocumentType);
+            await _dbContext.SaveChangesAsync();
+        }
+        public async Task<string> GetDocumentFileNameById(int documentId)
+        {
+            var document = await _dbContext.GenerateDocTypes.FindAsync(documentId);
+            return document?.Type;
+        }
+        public async Task<bool> UpdateGeneratedDocRestrictedAsync(int id, bool restricted)
+        {
+            var docType = await _dbContext.GenerateDocTypes.FindAsync(id);
+
+            if (docType != null)
+            {
+                docType.Restricted = restricted;
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
+        }
+
+
     }
 }

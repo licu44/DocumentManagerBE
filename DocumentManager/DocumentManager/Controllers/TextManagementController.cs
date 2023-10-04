@@ -102,16 +102,13 @@ namespace DocumentManager.Controllers
         [HttpGet("{userId}/{documentName}/download")]
         public async Task<IActionResult> DownloadDocument(int userId, string documentName)
         {
-            // construct the file path
             var path = $"E:\\dezvoltare personala\\LICENTA\\DocumentManagerBE\\DocumentManager\\DocumentManager\\Files\\Generated\\{documentName}-{userId}.docx";
 
-            // check if file exists
             if (!System.IO.File.Exists(path))
             {
                 return NotFound();
             }
 
-            // get file stream
             var memory = new MemoryStream();
             await using (var stream = new FileStream(path, FileMode.Open))
             {
@@ -120,7 +117,6 @@ namespace DocumentManager.Controllers
 
             memory.Position = 0;
 
-            // provide download
             return File(memory, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", Path.GetFileName(path));
         }
 

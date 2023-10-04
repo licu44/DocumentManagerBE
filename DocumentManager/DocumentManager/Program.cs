@@ -53,9 +53,8 @@ var app = builder.Build();
 
 app.UseCors(x => x
                 .AllowAnyMethod()
-                .AllowAnyHeader().SetIsOriginAllowed(origin => true) // allow any origin
-                .AllowCredentials()); // allow credentials);
-// Configure the HTTP request pipeline.
+                .AllowAnyHeader().SetIsOriginAllowed(origin => true)
+                .AllowCredentials());
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

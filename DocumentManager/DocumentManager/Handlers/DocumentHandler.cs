@@ -270,7 +270,6 @@ namespace DocumentManager.Handlers
             try
             {
                 var docs = await _docServices.GetAllDocumentDetails(userId);
-                await _docServices.GenerateDocumentsForUser(userId);
 
                 var documentTypes = await _docServices.GetGeneratedDocumentsAsync() as List<GenerateDocType>;
 
@@ -283,8 +282,7 @@ namespace DocumentManager.Handlers
                     {
                         ReplaceTextInDocumentAndSaveAs(docs, sourceFilePath, newFilePath);
 
-                        // insert new file path into database
-                        await _docServices.InsertGeneratedDocumentPath(userId, documentType.Id, newFilePath);
+                        await _docServices.InsertOrUpdateGeneratedDocumentPath(userId, documentType.Id, newFilePath);
                     }
                     catch (Exception ex)
                     {

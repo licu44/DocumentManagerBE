@@ -5,6 +5,8 @@ namespace DocumentManager.Models
 {
     public class UserGeneratedDoc
     {
+        internal string type;
+
         [ForeignKey("User")]
         public int UserId { get; set; }
         public int TypeId { get; set; }

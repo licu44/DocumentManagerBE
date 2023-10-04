@@ -61,7 +61,7 @@ namespace DocumentManager.Models
 
             modelBuilder.Entity<UserStatus>()
                 .HasOne(us => us.User)
-                .WithMany(u => u.UserStatuses) // Assuming that you have UserStatuses collection in your User model
+                .WithMany(u => u.UserStatuses)
                 .HasForeignKey(us => us.UserId);
 
             modelBuilder.Entity<UserStatus>()

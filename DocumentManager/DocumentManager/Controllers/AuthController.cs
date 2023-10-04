@@ -35,15 +35,16 @@ namespace DocumentManager.Controllers
         {
             var result = _userHandler.VerifyUser(request.Username, request.Password);
 
-            if (!string.IsNullOrEmpty(result.Token))
+            if (result != null && !string.IsNullOrEmpty(result.Token))
             {
                 return Ok(result);
             }
             else
             {
-                return Unauthorized();
+                return Unauthorized("Username or password is not correct.");
             }
-        }        
+        }
+
 
     }
 }
